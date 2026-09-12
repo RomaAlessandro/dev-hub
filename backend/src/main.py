@@ -1,36 +1,31 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.controllers.note_controller import router as note_router
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+from dotenv import load_dotenv
 from config.database import init_db
-from src.controllers.snippet_controller import router as snippet_router
+from src.controllers import snippet_controller, note_controller
 
-app = FastAPI(
-    title="Developer Hub API",
-    description="API per la gestione personale di snippet, note e utility",
-    version="1.0.0"
-)
+# Carica il file .env appena creato
+load_dotenv()
 
-# Abilitiamo CORS per permettere al frontend di chiamare le API
+app = FastAPI(title="Developer Hub API")
+
+init_db()
+
+# Legge il valore dal file .env (con fallback se non lo trova)
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In sviluppo permettiamo le chiamate da qualsiasi origine
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def on_startup():
-    init_db()
-
-app.include_router(snippet_router)
-app.include_router(note_router)
+app.include_router(snippet_controller.router, prefix="/api", tags=["Snippets"])
+app.include_router(note_controller.router, prefix="/api", tags=["Notes"])
 
 @app.get("/")
-def read_root():
-    return {"message": "Developer Hub API è attiva e funzionante!"}
+def root():
+    return {"message": "Developer Hub API in esecuzione"}

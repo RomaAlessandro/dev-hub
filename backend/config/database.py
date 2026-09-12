@@ -12,13 +12,13 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Tabelle principali
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             content TEXT NOT NULL,
             category TEXT DEFAULT 'Generale',
-            tags TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -30,21 +30,38 @@ def init_db():
             language TEXT NOT NULL,
             code TEXT NOT NULL,
             description TEXT,
-            tags TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
-    # Migrazione per aggiungere la colonna 'tags' se il DB è già stato creato in precedenza
-    try:
-        cursor.execute("ALTER TABLE snippets ADD COLUMN tags TEXT DEFAULT ''")
-    except sqlite3.OperationalError:
-        pass
 
-    try:
-        cursor.execute("ALTER TABLE notes ADD COLUMN tags TEXT DEFAULT ''")
-    except sqlite3.OperationalError:
-        pass
-        
+    # Nuova tabella unica per i Tag (case-insensitive)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL COLLATE NOCASE
+        )
+    ''')
+
+    # Tabelle di relazione Many-to-Many
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS snippet_tags (
+            snippet_id INTEGER,
+            tag_id INTEGER,
+            PRIMARY KEY (snippet_id, tag_id),
+            FOREIGN KEY (snippet_id) REFERENCES snippets(id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS note_tags (
+            note_id INTEGER,
+            tag_id INTEGER,
+            PRIMARY KEY (note_id, tag_id),
+            FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        )
+    ''')
+
     conn.commit()
     conn.close()

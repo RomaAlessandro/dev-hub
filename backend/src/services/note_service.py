@@ -1,51 +1,65 @@
 from config.database import get_db_connection
 from src.models.note import NoteCreate, NoteResponse
+from src.services.tag_service import get_or_create_tags, get_tags_for_entity
 from typing import List
 
 def create_note(note: NoteCreate) -> NoteResponse:
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO notes (title, content, category, tags) VALUES (?, ?, ?, ?)",
-        (note.title, note.content, note.category, note.tags)
-    )
-    conn.commit()
-    note_id = cursor.lastrowid
     
+    cursor.execute(
+        "INSERT INTO notes (title, content, category) VALUES (?, ?, ?)",
+        (note.title, note.content, note.category)
+    )
+    note_id = cursor.lastrowid
+
+    # Gestione Tag Many-to-Many
+    tag_ids = get_or_create_tags(cursor, note.tags)
+    for tag_id in tag_ids:
+        cursor.execute("INSERT OR IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)", (note_id, tag_id))
+
+    conn.commit()
+
     cursor.execute("SELECT created_at FROM notes WHERE id = ?", (note_id,))
     created_at = cursor.fetchone()[0]
-    conn.close()
     
+    tags_str = get_tags_for_entity(cursor, "note_tags", "note_id", note_id)
+    conn.close()
+
     return NoteResponse(
-        id=note_id, 
-        title=note.title, 
-        content=note.content, 
-        category=note.category, 
-        tags=note.tags, 
+        id=note_id,
+        title=note.title,
+        content=note.content,
+        category=note.category,
+        tags=tags_str,
         created_at=str(created_at)
     )
 
 def get_all_notes() -> List[NoteResponse]:
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, content, category, tags, created_at FROM notes ORDER BY id DESC")
+    cursor.execute("SELECT id, title, content, category, created_at FROM notes ORDER BY id DESC")
     rows = cursor.fetchall()
+
+    result = []
+    for r in rows:
+        tags_str = get_tags_for_entity(cursor, "note_tags", "note_id", r[0])
+        result.append(NoteResponse(
+            id=r[0],
+            title=r[1],
+            content=r[2],
+            category=r[3],
+            tags=tags_str,
+            created_at=str(r[4])
+        ))
+
     conn.close()
-    
-    return [
-        NoteResponse(
-            id=r[0], 
-            title=r[1], 
-            content=r[2], 
-            category=r[3], 
-            tags=r[4] or "", 
-            created_at=str(r[5])
-        ) for r in rows
-    ]
+    return result
 
 def delete_note(note_id: int) -> bool:
     conn = get_db_connection()
     cursor = conn.cursor()
+    cursor.execute("DELETE FROM note_tags WHERE note_id = ?", (note_id,))
     cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
     conn.commit()
     affected = cursor.rowcount

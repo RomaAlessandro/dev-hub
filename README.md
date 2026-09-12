@@ -9,4 +9,10 @@ Un'applicazione Full-Stack per la gestione di **Code Snippet** e **Note Tecniche
 **Frontend**: React, Vite, JavaScript (ES6+), CSS3
 **Tools**: Git, Fish Shell
 
+for run backend:
+cd ~/Desktop/dev-hub/backend
+./venv/bin/uvicorn src.main:app --reload --port 8001
 
+For run frontend: 
+cd ~/Desktop/dev-hub/frontend
+npm run dev
