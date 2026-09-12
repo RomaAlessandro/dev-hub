@@ -5,16 +5,18 @@ export function SnippetForm({ onSnippetAdded }) {
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !code) return alert("Titolo e codice sono obbligatori!");
 
-    await onSnippetAdded({ title, language, code, description });
+    await onSnippetAdded({ title, language, code, description, tags });
 
     setTitle("");
     setCode("");
     setDescription("");
+    setTags("");
   };
 
   return (
@@ -53,6 +55,17 @@ export function SnippetForm({ onSnippetAdded }) {
           value={description} 
           onChange={(e) => setDescription(e.target.value)} 
           placeholder="Breve spiegazione del codice..."
+          style={styles.input}
+        />
+      </div>
+
+      <div style={styles.field}>
+        <label>Tag (separati da virgola):</label>
+        <input 
+          type="text" 
+          value={tags} 
+          onChange={(e) => setTags(e.target.value)} 
+          placeholder="Es. react, hooks, async"
           style={styles.input}
         />
       </div>

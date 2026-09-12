@@ -5,6 +5,7 @@ class NoteCreate(BaseModel):
     title: str
     content: str
     category: Optional[str] = "Generale"
+    tags: Optional[str] = ""
 
 class NoteResponse(NoteCreate):
     id: int

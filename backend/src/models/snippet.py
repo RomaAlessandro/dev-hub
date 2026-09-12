@@ -6,6 +6,7 @@ class SnippetCreate(BaseModel):
     language: str
     code: str
     description: Optional[str] = None
+    tags: Optional[str] = ""
 
 class SnippetResponse(SnippetCreate):
     id: int

@@ -5,13 +5,13 @@ def create_snippet(snippet: SnippetCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO snippets (title, language, code, description) VALUES (?, ?, ?, ?)",
-        (snippet.title, snippet.language, snippet.code, snippet.description)
+        "INSERT INTO snippets (title, language, code, description, tags) VALUES (?, ?, ?, ?, ?)",
+        (snippet.title, snippet.language, snippet.code, snippet.description, snippet.tags)
     )
     conn.commit()
     snippet_id = cursor.lastrowid
     
-    cursor.execute("SELECT id, title, language, code, description, created_at FROM snippets WHERE id = ?", (snippet_id,))
+    cursor.execute("SELECT id, title, language, code, description, tags, created_at FROM snippets WHERE id = ?", (snippet_id,))
     row = cursor.fetchone()
     conn.close()
     return dict(row)
@@ -19,7 +19,7 @@ def create_snippet(snippet: SnippetCreate):
 def get_all_snippets():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, language, code, description, created_at FROM snippets ORDER BY id DESC")
+    cursor.execute("SELECT id, title, language, code, description, tags, created_at FROM snippets ORDER BY id DESC")
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]

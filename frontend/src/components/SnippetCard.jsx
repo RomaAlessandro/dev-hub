@@ -1,10 +1,15 @@
 import React from "react";
+import { TagPill } from "./TagPill";
 
-export function SnippetCard({ snippet, onDelete }) {
+export function SnippetCard({ snippet, onDelete, onTagClick }) {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(snippet.code);
     alert("Codice copiato negli appunti!");
   };
+
+  const tagsList = snippet.tags 
+    ? snippet.tags.split(",").map((t) => t.trim()).filter(Boolean) 
+    : [];
 
   return (
     <div style={styles.card}>
@@ -12,10 +17,21 @@ export function SnippetCard({ snippet, onDelete }) {
         <h3 style={styles.title}>{snippet.title}</h3>
         <span style={styles.badge}>{snippet.language}</span>
       </div>
+      
       {snippet.description && <p style={styles.desc}>{snippet.description}</p>}
+
+      {tagsList.length > 0 && (
+        <div style={styles.tagsContainer}>
+          {tagsList.map((tag, idx) => (
+            <TagPill key={idx} tag={tag} onClick={onTagClick} />
+          ))}
+        </div>
+      )}
+
       <pre style={styles.codeBlock}>
         <code>{snippet.code}</code>
       </pre>
+
       <div style={styles.actions}>
         <button style={styles.copyBtn} onClick={copyToClipboard}>
           📋 Copia
@@ -41,6 +57,7 @@ const styles = {
   title: { margin: 0, fontSize: "1.2rem" },
   badge: { backgroundColor: "#007acc", padding: "4px 8px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: "bold" },
   desc: { color: "#aaa", fontSize: "0.9rem", margin: "8px 0" },
+  tagsContainer: { marginBottom: "10px", marginTop: "4px" },
   codeBlock: { backgroundColor: "#2d2d2d", padding: "12px", borderRadius: "6px", overflowX: "auto", fontSize: "0.9rem" },
   actions: { display: "flex", gap: "10px", marginTop: "12px" },
   copyBtn: { backgroundColor: "#333", color: "#fff", border: "1px solid #555", padding: "6px 12px", borderRadius: "4px", cursor: "pointer" },

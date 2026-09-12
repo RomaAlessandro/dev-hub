@@ -5,6 +5,7 @@ import { SnippetCard } from "./components/SnippetCard";
 import { SnippetForm } from "./components/SnippetForm";
 import { NoteCard } from "./components/NoteCard";
 import { NoteForm } from "./components/NoteForm";
+import { TagPill } from "./components/TagPill";
 
 // Importa i nuovi tool
 import { JsonTool } from "./components/tools/JsonTool";
@@ -16,6 +17,7 @@ export default function App() {
   const [snippets, setSnippets] = useState([]);
   const [notes, setNotes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTag, setSelectedTag] = useState(null);
 
   useEffect(() => {
     loadSnippets();
@@ -31,8 +33,30 @@ export default function App() {
   const handleAddNote = async (n) => { await createNote(n); loadNotes(); };
   const handleDeleteNote = async (id) => { if (confirm("Eliminare?")) { await deleteNote(id); loadNotes(); } };
 
-  const filteredSnippets = snippets.filter((s) => s.title.toLowerCase().includes(searchTerm.toLowerCase()));
-  const filteredNotes = notes.filter((n) => n.title.toLowerCase().includes(searchTerm.toLowerCase()) || n.category.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Estrai tutti i tag unici da Snippet e Note per creare la barra dei filtri
+  const allTags = Array.from(new Set([
+    ...snippets.flatMap((s) => (s.tags ? s.tags.split(",").map((t) => t.trim()) : [])),
+    ...notes.flatMap((n) => (n.tags ? n.tags.split(",").map((t) => t.trim()) : []))
+  ])).filter(Boolean);
+
+  // Funzione di filtraggio per la ricerca testuale e il tag selezionato
+  const filterItem = (item) => {
+    const titleMatch = item.title ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const categoryMatch = item.category ? item.category.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const matchesSearch = titleMatch || categoryMatch;
+
+    const itemTags = item.tags ? item.tags.split(",").map((t) => t.trim()) : [];
+    const matchesTag = selectedTag ? itemTags.includes(selectedTag) : true;
+
+    return matchesSearch && matchesTag;
+  };
+
+  const filteredSnippets = snippets.filter(filterItem);
+  const filteredNotes = notes.filter(filterItem);
+
+  const handleTagToggle = (tag) => {
+    setSelectedTag((prevTag) => (prevTag === tag ? null : tag));
+  };
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
@@ -61,26 +85,65 @@ export default function App() {
       </div>
 
       {activeTab !== "tools" && (
-        <input
-          type="text"
-          placeholder="🔍 Cerca..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#1e1e1e", color: "#fff", marginBottom: "20px", boxSizing: "border-box" }}
-        />
+        <>
+          <input
+            type="text"
+            placeholder="🔍 Cerca per titolo o categoria..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#1e1e1e", color: "#fff", marginBottom: "12px", boxSizing: "border-box" }}
+          />
+
+          {/* Barra delle pillole dei tag */}
+          {allTags.length > 0 && (
+            <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
+              <span style={{ fontSize: "0.85rem", color: "#aaa", marginRight: "4px" }}>Filtra per Tag:</span>
+              {allTags.map((tag) => (
+                <TagPill
+                  key={tag}
+                  tag={tag}
+                  isSelected={selectedTag === tag}
+                  onClick={handleTagToggle}
+                />
+              ))}
+              {selectedTag && (
+                <button 
+                  onClick={() => setSelectedTag(null)} 
+                  style={{ backgroundColor: "transparent", color: "#ff6b6b", border: "none", cursor: "pointer", fontSize: "0.8rem", padding: "2px 6px" }}
+                >
+                  ❌ Rimuovi filtro
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {activeTab === "snippets" && (
         <>
           <SnippetForm onSnippetAdded={handleAddSnippet} />
-          {filteredSnippets.map((s) => <SnippetCard key={s.id} snippet={s} onDelete={handleDeleteSnippet} />)}
+          {filteredSnippets.map((s) => (
+            <SnippetCard 
+              key={s.id} 
+              snippet={s} 
+              onDelete={handleDeleteSnippet} 
+              onTagClick={handleTagToggle} 
+            />
+          ))}
         </>
       )}
 
       {activeTab === "notes" && (
         <>
           <NoteForm onNoteAdded={handleAddNote} />
-          {filteredNotes.map((n) => <NoteCard key={n.id} note={n} onDelete={handleDeleteNote} />)}
+          {filteredNotes.map((n) => (
+            <NoteCard 
+              key={n.id} 
+              note={n} 
+              onDelete={handleDeleteNote} 
+              onTagClick={handleTagToggle} 
+            />
+          ))}
         </>
       )}
 
