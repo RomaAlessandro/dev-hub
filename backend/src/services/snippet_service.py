@@ -1,5 +1,5 @@
 from config.database import get_db_connection
-from src.models.snippet import SnippetCreate
+from src.models.snippet import SnippetCreate, SnippetUpdate
 from src.services.tag_service import get_or_create_tags, get_tags_for_entity
 
 def create_snippet(snippet: SnippetCreate):
@@ -47,3 +47,23 @@ def delete_snippet(snippet_id: int) -> bool:
     affected = cursor.rowcount
     conn.close()
     return affected > 0
+
+def update_snippet(snippet_id: int, snippet: SnippetUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE snippets SET title = ?, language = ?, code = ?, description = ? WHERE id = ?",
+        (snippet.title, snippet.language, snippet.code, snippet.description, snippet_id)
+    )
+
+    # Rimuovi i vecchi legami con i tag e reinserisci i nuovi
+    cursor.execute("DELETE FROM snippet_tags WHERE snippet_id = ?", (snippet_id,))
+    tag_ids = get_or_create_tags(cursor, snippet.tags)
+    for tag_id in tag_ids:
+        cursor.execute("INSERT OR IGNORE INTO snippet_tags (snippet_id, tag_id) VALUES (?, ?)", (snippet_id, tag_id))
+
+    conn.commit()
+    conn.close()
+
+    return get_all_snippets() # Restituisce i dati aggiornati

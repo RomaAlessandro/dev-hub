@@ -20,3 +20,12 @@ export async function deleteSnippet(id) {
   });
   return res.ok;
 }
+
+export async function updateSnippet(id, snippet) {
+  const res = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(snippet),
+  });
+  return await res.json();
+}

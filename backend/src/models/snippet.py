@@ -11,3 +11,10 @@ class SnippetCreate(BaseModel):
 class SnippetResponse(SnippetCreate):
     id: int
     created_at: str
+
+class SnippetUpdate(BaseModel):
+    title: str
+    language: str
+    code: str
+    description: Optional[str] = ""
+    tags: Optional[str] = ""

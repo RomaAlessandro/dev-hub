@@ -10,3 +10,9 @@ class NoteCreate(BaseModel):
 class NoteResponse(NoteCreate):
     id: int
     created_at: str
+
+class NoteUpdate(BaseModel):
+    title: str
+    content: str
+    category: Optional[str] = ""
+    tags: Optional[str] = ""

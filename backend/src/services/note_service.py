@@ -1,5 +1,5 @@
 from config.database import get_db_connection
-from src.models.note import NoteCreate, NoteResponse
+from src.models.note import NoteCreate, NoteResponse, NoteUpdate
 from src.services.tag_service import get_or_create_tags, get_tags_for_entity
 from typing import List
 
@@ -65,3 +65,23 @@ def delete_note(note_id: int) -> bool:
     affected = cursor.rowcount
     conn.close()
     return affected > 0
+
+def update_note(note_id: int, note: NoteUpdate):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE notes SET title = ?, content = ?, category = ? WHERE id = ?",
+        (note.title, note.content, note.category, note_id)
+    )
+
+    # Rimuovi vecchi tag e reinserisci
+    cursor.execute("DELETE FROM note_tags WHERE note_id = ?", (note_id,))
+    tag_ids = get_or_create_tags(cursor, note.tags)
+    for tag_id in tag_ids:
+        cursor.execute("INSERT OR IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)", (note_id, tag_id))
+
+    conn.commit()
+    conn.close()
+
+    return get_all_notes()

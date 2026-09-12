@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
-from src.models.note import NoteCreate, NoteResponse
+from src.models.note import NoteCreate, NoteResponse, NoteUpdate
 from src.services import note_service
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
@@ -18,3 +18,7 @@ def delete_note(note_id: int):
     if not note_service.delete_note(note_id):
         raise HTTPException(status_code=404, detail="Nota non trovata")
     return {"message": "Nota eliminata"}
+
+@router.put("/{note_id}")
+def update_existing_note(note_id: int, note: NoteUpdate):
+    return note_service.update_note(note_id, note)

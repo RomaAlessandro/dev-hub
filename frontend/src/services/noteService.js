@@ -20,3 +20,12 @@ export async function deleteNote(id) {
   });
   return res.ok;
 }
+
+export async function updateNote(id, note) {
+  const res = await fetch(`${API_BASE_URL}/notes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(note),
+  });
+  return await res.json();
+}

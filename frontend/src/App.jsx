@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { fetchSnippets, createSnippet, deleteSnippet } from "./services/snippetService";
-import { fetchNotes, createNote, deleteNote } from "./services/noteService";
+import { fetchSnippets, createSnippet, deleteSnippet, updateSnippet } from "./services/snippetService";
+import { fetchNotes, createNote, deleteNote, updateNote } from "./services/noteService";
 import { SnippetCard } from "./components/SnippetCard";
 import { SnippetForm } from "./components/SnippetForm";
 import { NoteCard } from "./components/NoteCard";
 import { NoteForm } from "./components/NoteForm";
 import { TagPill } from "./components/TagPill";
-
-// Importa i nuovi tool
 import { JsonTool } from "./components/tools/JsonTool";
 import { RegexTool } from "./components/tools/RegexTool";
 import { BackupTool } from "./components/tools/BackupTool";
@@ -29,17 +27,17 @@ export default function App() {
 
   const handleAddSnippet = async (s) => { await createSnippet(s); loadSnippets(); };
   const handleDeleteSnippet = async (id) => { if (confirm("Eliminare?")) { await deleteSnippet(id); loadSnippets(); } };
+  const handleUpdateSnippet = async (id, updatedSnippet) => { await updateSnippet(id, updatedSnippet); loadSnippets(); };
 
   const handleAddNote = async (n) => { await createNote(n); loadNotes(); };
   const handleDeleteNote = async (id) => { if (confirm("Eliminare?")) { await deleteNote(id); loadNotes(); } };
+  const handleUpdateNote = async (id, updatedNote) => { await updateNote(id, updatedNote); loadNotes(); };
 
-  // Estrai tutti i tag unici da Snippet e Note per creare la barra dei filtri
   const allTags = Array.from(new Set([
     ...snippets.flatMap((s) => (s.tags ? s.tags.split(",").map((t) => t.trim()) : [])),
     ...notes.flatMap((n) => (n.tags ? n.tags.split(",").map((t) => t.trim()) : []))
   ])).filter(Boolean);
 
-  // Funzione di filtraggio per la ricerca testuale e il tag selezionato
   const filterItem = (item) => {
     const titleMatch = item.title ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
     const categoryMatch = item.category ? item.category.toLowerCase().includes(searchTerm.toLowerCase()) : false;
@@ -62,7 +60,6 @@ export default function App() {
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ textAlign: "center" }}>🛠️ Developer Hub</h1>
 
-      {/* Tab Navigation */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", justifyContent: "center" }}>
         <button 
           onClick={() => setActiveTab("snippets")} 
@@ -94,7 +91,6 @@ export default function App() {
             style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#1e1e1e", color: "#fff", marginBottom: "12px", boxSizing: "border-box" }}
           />
 
-          {/* Barra delle pillole dei tag */}
           {allTags.length > 0 && (
             <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
               <span style={{ fontSize: "0.85rem", color: "#aaa", marginRight: "4px" }}>Filtra per Tag:</span>
@@ -127,6 +123,7 @@ export default function App() {
               key={s.id} 
               snippet={s} 
               onDelete={handleDeleteSnippet} 
+              onUpdate={handleUpdateSnippet}
               onTagClick={handleTagToggle} 
             />
           ))}
@@ -140,7 +137,8 @@ export default function App() {
             <NoteCard 
               key={n.id} 
               note={n} 
-              onDelete={handleDeleteNote} 
+              onDelete={handleDeleteNote}
+              onUpdate={handleUpdateNote}
               onTagClick={handleTagToggle} 
             />
           ))}
