@@ -6,6 +6,11 @@ import { SnippetForm } from "./components/SnippetForm";
 import { NoteCard } from "./components/NoteCard";
 import { NoteForm } from "./components/NoteForm";
 
+// Importa i nuovi tool
+import { JsonTool } from "./components/tools/JsonTool";
+import { RegexTool } from "./components/tools/RegexTool";
+import { BackupTool } from "./components/tools/BackupTool";
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("snippets");
   const [snippets, setSnippets] = useState([]);
@@ -47,25 +52,43 @@ export default function App() {
         >
           📝 Note Tecniche ({notes.length})
         </button>
+        <button 
+          onClick={() => setActiveTab("tools")} 
+          style={{ padding: "10px 20px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "bold", backgroundColor: activeTab === "tools" ? "#007acc" : "#333", color: "#fff" }}
+        >
+          🧰 Tools & Utility
+        </button>
       </div>
 
-      <input
-        type="text"
-        placeholder="🔍 Cerca..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#1e1e1e", color: "#fff", marginBottom: "20px", boxSizing: "border-box" }}
-      />
+      {activeTab !== "tools" && (
+        <input
+          type="text"
+          placeholder="🔍 Cerca..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#1e1e1e", color: "#fff", marginBottom: "20px", boxSizing: "border-box" }}
+        />
+      )}
 
-      {activeTab === "snippets" ? (
+      {activeTab === "snippets" && (
         <>
           <SnippetForm onSnippetAdded={handleAddSnippet} />
           {filteredSnippets.map((s) => <SnippetCard key={s.id} snippet={s} onDelete={handleDeleteSnippet} />)}
         </>
-      ) : (
+      )}
+
+      {activeTab === "notes" && (
         <>
           <NoteForm onNoteAdded={handleAddNote} />
           {filteredNotes.map((n) => <NoteCard key={n.id} note={n} onDelete={handleDeleteNote} />)}
+        </>
+      )}
+
+      {activeTab === "tools" && (
+        <>
+          <JsonTool />
+          <RegexTool />
+          <BackupTool snippets={snippets} notes={notes} />
         </>
       )}
     </div>
