@@ -3,7 +3,7 @@ import React, { useState } from "react";
 export function NoteForm({ onNoteAdded }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Generale");
+  const [category, setCategory] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();

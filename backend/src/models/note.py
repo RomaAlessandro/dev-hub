@@ -4,7 +4,7 @@ from typing import Optional
 class NoteCreate(BaseModel):
     title: str
     content: str
-    category: Optional[str] = "Generale"
+    category: Optional[str] = ""
     tags: Optional[str] = ""
 
 class NoteResponse(NoteCreate):
