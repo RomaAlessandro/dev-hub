@@ -27,6 +27,15 @@ export function SnippetCard({ snippet, onDelete, onUpdate, onTagClick }) {
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Sincronizza lo stato locale quando la prop snippet cambia dal padre
+  useEffect(() => {
+    setTitle(snippet.title);
+    setLanguage(snippet.language);
+    setDescription(snippet.description || "");
+    setTags(snippet.tags || "");
+    setCode(snippet.code);
+  }, [snippet]);
+
   // Esegue l'highlighting ogni volta che cambia il codice o il linguaggio
   useEffect(() => {
     if (!isEditing) {
@@ -52,7 +61,14 @@ export function SnippetCard({ snippet, onDelete, onUpdate, onTagClick }) {
   const handleExportGist = async () => {
     setExporting(true);
     try {
-      const gistData = await githubService.exportSnippetToGist(snippet, false);
+      // Invia i dati correnti dell'editor anziché l'oggetto snippet non aggiornato
+      const currentData = {
+        title: title || snippet.title,
+        language: language || snippet.language,
+        description: description ?? snippet.description,
+        code: code || snippet.code,
+      };
+      const gistData = await githubService.exportSnippetToGist(currentData, false);
       alert(`Gist creato con successo!\nURL: ${gistData.html_url}`);
     } catch (err) {
       alert(`Errore Export Gist: ${err.message}`);

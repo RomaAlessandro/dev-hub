@@ -3,16 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from config.database import init_db
-from src.controllers import snippet_controller, note_controller
+from src.controllers import snippet_controller, note_controller, github_controller
 
-# Carica il file .env appena creato
 load_dotenv()
 
 app = FastAPI(title="Developer Hub API")
 
 init_db()
 
-# Legge il valore dal file .env (con fallback se non lo trova)
 allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
 app.add_middleware(
@@ -25,6 +23,7 @@ app.add_middleware(
 
 app.include_router(snippet_controller.router, prefix="/api", tags=["Snippets"])
 app.include_router(note_controller.router, prefix="/api", tags=["Notes"])
+app.include_router(github_controller.router, prefix="/api", tags=["GitHub"])
 
 @app.get("/")
 def root():

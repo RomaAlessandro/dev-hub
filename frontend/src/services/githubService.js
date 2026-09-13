@@ -1,60 +1,35 @@
-const GITHUB_API_BASE = "https://api.github.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8001/api";
 
 export const githubService = {
-  // Salva o recupera il token dal localStorage
-  getToken: () => localStorage.getItem("github_pat") || "",
-  setToken: (token) => localStorage.setItem("github_pat", token),
-  clearToken: () => localStorage.removeItem("github_pat"),
+  getToken: () => localStorage.getItem("github_token") || "",
+  setToken: (token) => localStorage.setItem("github_token", token.trim()),
+  clearToken: () => localStorage.removeItem("github_token"),
 
-  // Esporta uno snippet come GitHub Gist
   exportSnippetToGist: async (snippet, isPublic = false) => {
-    const token = githubService.getToken();
-    if (!token) throw new Error("Token GitHub non configurato.");
+    const token = localStorage.getItem("github_token");
+    const headers = { "Content-Type": "application/json" };
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
-    // Determina estensione file in base al linguaggio
-    const extMap = { javascript: "js", python: "py", bash: "sh", php: "php", json: "json", sql: "sql", html: "html", css: "css" };
-    const ext = extMap[(snippet.language || "").toLowerCase()] || "txt";
-    const filename = `${snippet.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.${ext}`;
-
-    const response = await fetch(`${GITHUB_API_BASE}/gists`, {
+    const response = await fetch(`${API_BASE_URL}/github/export-gist/`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/vnd.github+json",
-      },
+      headers,
       body: JSON.stringify({
-        description: snippet.description || snippet.title,
-        public: isPublic,
-        files: {
-          [filename]: {
-            content: snippet.code,
-          },
-        },
+        title: snippet.title,
+        code: snippet.code,
+        language: snippet.language,
+        description: snippet.description || "",
+        is_public: isPublic,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Errore durante la creazione del Gist.");
+      throw new Error(errorData.detail || "Errore durante l'export del Gist.");
     }
 
-    return await response.json();
-  },
-
-  // Recupera i Gist dell'utente autenticato
-  getUserGists: async () => {
-    const token = githubService.getToken();
-    if (!token) throw new Error("Token GitHub non configurato.");
-
-    const response = await fetch(`${GITHUB_API_BASE}/gists`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
-
-    if (!response.ok) throw new Error("Errore nel recupero dei Gist da GitHub.");
     return await response.json();
   },
 };
