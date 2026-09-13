@@ -6,9 +6,20 @@ Un'applicazione Full-Stack per la gestione di **Code Snippet** e **Note Tecniche
 
 ## 🚀 Tecnologie Utilizzate
 
-* **Backend**: FastAPI, Python 3.12+, SQLite3, Pydantic, Uvicorn
-* **Frontend**: React, Vite, JavaScript (ES6+), CSS3
-* **Tools**: Git, Fish Shell
+* **Backend:** FastAPI, Python 3.12+, SQLite3, Pydantic, Uvicorn, HTTPX
+* **Frontend:** React, Vite, JavaScript (ES6+), PrismJS, CSS3
+* **Tools & Environment:** Git, Fish Shell, Linux (CachyOS)
+
+---
+
+## 📌 Funzionalità Principali
+
+* 📝 **Snippet Manager:** Salvataggio, modifica, ricerca per titolo/tag e copia rapida del codice negli appunti.
+* 🎨 **Syntax Highlighting:** Evidenziazione automatica del codice in base al linguaggio tramite PrismJS.
+* 🐙 **GitHub Gist Export:** Esportazione diretta dei tuoi snippet di codice su GitHub Gist via API REST.
+* 🔑 **Gestione Autenticazione:** Configurazione del Personal Access Token di GitHub direttamente da UI o tramite file `.env`.
+* 📚 **Note Tecniche:** Organizzazione e consultazione rapida di appunti e concetti di sviluppo.
+* 💾 **Database SQLite:** Persistenza dei dati locale con tabelle relazionali isolate.
 
 ---
 
@@ -16,25 +27,9 @@ Un'applicazione Full-Stack per la gestione di **Code Snippet** e **Note Tecniche
 
 ### 1. Backend (FastAPI)
 
-```bash
+```fish
 cd backend
 python -m venv venv
-source venv/bin/activate  # Su Fish shell: source venv/bin/activate.fish
-pip install fastapi uvicorn
+source venv/bin/activate.fish   # Su Bash/Zsh usa: source venv/bin/activate
+pip install -r requirements.txt # Oppure: pip install fastapi uvicorn httpx pydantic
 ./venv/bin/uvicorn src.main:app --reload --port 8001
-
-Il backend sarà disponibile su http://127.0.0.1:8001.
-
-2. Frontend (React + Vite)
-cd frontend
-npm install
-npm run dev
-
-Il frontend sarà disponibile su http://localhost:5173.
-📌 Funzionalità
-
-    Snippet Manager: Salvataggio, consultazione, filtraggio e copia rapida negli appunti di blocchi di codice.
-
-    Note Tecniche: Organizzazione per categoria e consultazione rapida di appunti di sviluppo.
-
-    Database SQLite: Persistenza locale con tabelle relazionali isolate.
