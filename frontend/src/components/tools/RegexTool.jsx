@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 export function RegexTool() {
   const [pattern, setPattern] = useState("");
-  const [flags, setFlags] = useState("g");
+  const [flags, setFlags] = useState("");
   const [testText, setTestText] = useState("");
 
   const getMatches = () => {
